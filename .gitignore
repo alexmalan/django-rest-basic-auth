@@ -1,0 +1,14 @@
+venv/*
+static/*
+
+### Python ###
+__pycache__/
+
+### PyCharm ###
+*.idea/
+*.env
+
+### Django ###
+*.log
+*.pot
+*.pyc
