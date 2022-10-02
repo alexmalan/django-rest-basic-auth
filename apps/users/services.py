@@ -1,5 +1,7 @@
-from .models import User
 from django.shortcuts import Http404
+
+from .models import User
+
 
 def deposit_amount(user=None, amount=None):
     """
@@ -8,7 +10,11 @@ def deposit_amount(user=None, amount=None):
     :param User user: User instance
     :param int amount: Amount to deposit
     """
-    if amount is None or not isinstance(amount, int) or amount not in [100, 50, 20, 10, 5]:
+    if (
+        amount is None
+        or not isinstance(amount, int)
+        or amount not in [100, 50, 20, 10, 5]
+    ):
         raise Http404("Invalid input")
 
     user.deposit += amount
@@ -18,6 +24,7 @@ def deposit_amount(user=None, amount=None):
         raise Http404("Error while saving the user")
 
     return True
+
 
 def reset_amount(user=None):
     """

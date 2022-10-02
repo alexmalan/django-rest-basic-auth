@@ -4,8 +4,9 @@ from django.shortcuts import Http404
 from rest_framework import authentication, generics, permissions, status
 from rest_framework.response import Response
 
+from common.permissions import IsBuyer, IsOwner, IsSeller
+
 from .models import Product
-from common.permissions import IsOwner, IsSeller, IsBuyer
 from .serializers import ProductSerializer
 from .services import buy_product
 
@@ -42,7 +43,7 @@ class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         except:
             raise Http404("Product not found")
         return product
-    
+
     def update(self, request, *args, **kwargs):
         product = self.get_object()
         serializer = self.get_serializer(product, data=request.data)
@@ -61,26 +62,24 @@ class ProductBuyView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         if not request.data:
             return Response(
-                {"error": "No quantity provided"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "No quantity provided"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
-        if self.kwargs['product_id']:
-            request.data['product_id'] = self.kwargs['product_id']
+
+        if self.kwargs["product_id"]:
+            request.data["product_id"] = self.kwargs["product_id"]
         else:
             return Response(
-                {"error": "No product id provided"},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "No product id provided"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         change_list, spending, product = buy_product(request.user, request.data)
-        
+
         if product:
             report = {
-                    "change": change_list,
-                    "spending": spending,
-                    "product": ProductSerializer(product).data,
-                }
+                "change": change_list,
+                "spending": spending,
+                "product": ProductSerializer(product).data,
+            }
 
-            return Response({'response': report}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid input'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"response": report}, status=status.HTTP_200_OK)
+        return Response({"error": "Invalid input"}, status=status.HTTP_400_BAD_REQUEST)

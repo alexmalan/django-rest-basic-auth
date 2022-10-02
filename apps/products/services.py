@@ -1,5 +1,7 @@
-from .models import Product
 from django.shortcuts import Http404
+
+from .models import Product
+
 
 def buy_product(user=None, payload=None):
     """
@@ -38,10 +40,10 @@ def buy_product(user=None, payload=None):
         change_list = []
 
         for i in [100, 50, 20, 10, 5]:
-            while change >=i:
+            while change >= i:
                 change_list.append(i)
                 change -= i
-        
+
         try:
             product.save()
             user.save()
