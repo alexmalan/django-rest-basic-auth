@@ -1,5 +1,6 @@
 from django.contrib.auth import login, logout
 from rest_framework import authentication, generics, permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from common.permissions import IsBuyer, IsOwner, IsSeller
@@ -23,19 +24,17 @@ class UserLoginView(generics.RetrieveAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
-        username = request.data.get("username", None)
-        password = request.data.get("password", None)
-        user = User.objects.filter(username=username, password=password).first()
-        if user is not None:
+        user = User.objects.filter(
+            username=request.data.get("username", None),
+            password=request.data.get("password", None),
+        ).first()
+        if user:
             login(request, user)
             return Response(
                 {"success": f"Welcome {request.user}: {request.user.role}"},
                 status=status.HTTP_200_OK,
             )
-        else:
-            return Response(
-                {"error": "Wrong Credentials"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        raise ValidationError("Invalid Credentials")
 
 
 # STATUS
@@ -99,10 +98,7 @@ class UserDepositView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         if request.data is None or not request.data["amount"]:
-            return Response(
-                {"error": "No amount provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            raise ValidationError("Invalid input")
 
         response = deposit_amount(request.user, request.data["amount"])
 
@@ -132,3 +128,4 @@ class UserResetView(generics.GenericAPIView):
                 },
                 status=status.HTTP_200_OK,
             )
+        raise ValidationError("Something went wrong")

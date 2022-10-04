@@ -1,7 +1,7 @@
 from math import prod
 
-from django.shortcuts import Http404
 from rest_framework import authentication, generics, permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from common.permissions import IsBuyer, IsOwner, IsSeller
@@ -41,7 +41,7 @@ class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         try:
             product = Product.objects.get(id=self.kwargs.get("product_id"))
         except:
-            raise Http404("Product not found")
+            raise ValidationError("Product not found")
         return product
 
     def update(self, request, *args, **kwargs):
@@ -61,16 +61,12 @@ class ProductBuyView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         if not request.data:
-            return Response(
-                {"error": "No quantity provided"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("Invalid payload")
 
         if self.kwargs["product_id"]:
             request.data["product_id"] = self.kwargs["product_id"]
         else:
-            return Response(
-                {"error": "No product id provided"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            raise ValidationError("No product provided")
 
         change_list, spending, product = buy_product(request.user, request.data)
 
@@ -82,4 +78,4 @@ class ProductBuyView(generics.GenericAPIView):
             }
 
             return Response({"response": report}, status=status.HTTP_200_OK)
-        return Response({"error": "Invalid input"}, status=status.HTTP_400_BAD_REQUEST)
+        raise ValidationError("Product not found")

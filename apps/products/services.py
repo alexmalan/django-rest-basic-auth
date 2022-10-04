@@ -1,4 +1,4 @@
-from django.shortcuts import Http404
+from rest_framework.exceptions import ValidationError
 
 from .models import Product
 
@@ -12,7 +12,7 @@ def buy_product(user=None, payload=None):
     :param User user: User instance
     """
     if payload is None or not isinstance(payload, dict):
-        raise Http404("Invalid input")
+        raise ValidationError("Invalid input")
 
     # retrieve the product
     product = Product.objects.filter(id=payload["product_id"]).first()
@@ -22,11 +22,15 @@ def buy_product(user=None, payload=None):
 
         # check if the amount is enough
         if product.amount < payload["quantity"]:
-            raise Http404("The requested quantity exceeds the available quantity.")
+            raise ValidationError(
+                "The requested quantity exceeds the available quantity."
+            )
 
         # check if the user has enough money
         if user.deposit < spending:
-            raise Http404("Not enough deposit available. Please insert more coins.")
+            raise ValidationError(
+                "Not enough deposit available. Please insert more coins."
+            )
 
         # update the product amount
         if product.amount == payload["quantity"]:
@@ -48,7 +52,7 @@ def buy_product(user=None, payload=None):
             product.save()
             user.save()
         except Exception:
-            raise Http404("Error while saving the product or user")
+            raise ValidationError("Error while saving the product or user")
 
         return change_list, spending, product
-    return False, False, False
+    raise ValidationError("Product not found")
