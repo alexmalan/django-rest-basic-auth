@@ -1,3 +1,6 @@
+"""
+Product services.
+"""
 from rest_framework.exceptions import ValidationError
 
 from .models import Product
@@ -11,8 +14,12 @@ def buy_product(user=None, payload=None):
     :param dict payload: Request data payload
     :param User user: User instance
     """
-    if payload is None or not isinstance(payload, dict):
-        raise ValidationError("Invalid input")
+    if (
+        payload is None
+        or not isinstance(payload, dict)
+        or not isinstance(payload["quantity"], int)
+    ):
+        raise ValidationError("Invalid input.")
 
     # retrieve the product
     product = Product.objects.filter(id=payload["product_id"]).first()

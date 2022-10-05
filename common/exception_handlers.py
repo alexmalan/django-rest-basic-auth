@@ -1,3 +1,6 @@
+"""
+Common project exception handlers.
+"""
 from http import HTTPStatus
 
 from rest_framework.exceptions import ValidationError

@@ -1,18 +1,22 @@
-from lib2to3.pytree import Base
-from tabnanny import verbose
-
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+"""
+User models.
+"""
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
 
 
 class UserManager(BaseUserManager):
+    """
+    User Manager class.
+    """
+
     def create_user(
         self, username, password=None, role=None, deposit=None, **extra_fields
     ):
+        """
+        Create and save a user with the given username, email, and password.
+        """
         if username is None:
             raise TypeError("Users should have a username")
 
@@ -25,6 +29,9 @@ class UserManager(BaseUserManager):
     def create_superuser(
         self, username, password=None, role=None, deposit=None, **extra_fields
     ):
+        """
+        Create and save a super user with the given username, email, and password.
+        """
         if password is None:
             raise TypeError("Password should not be none")
 
@@ -36,19 +43,36 @@ class UserManager(BaseUserManager):
 
 
 class BaseClass(models.Model):
+    """
+    Base audit class.
+    """
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        """
+        Meta class.
+        """
+
         abstract = True
 
 
 class RoleChoices(models.TextChoices):
+    """
+    User role choices.
+    """
+
     SELLER = "SELLER"
     BUYER = "BUYER"
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """
+    User database model.
+    Used for storing user details.
+    """
+
     username = models.EmailField(null=False, blank=False, unique=True)
     password = models.CharField(max_length=250, null=False, blank=False)
     deposit = models.IntegerField(
@@ -71,9 +95,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __repr__(self):
+        """
+        String representation of user object.
+        """
         return f"{self.username}: {self.role}"
 
     class Meta:
+        """
+        Meta class.
+        """
+
         db_table = "user"
         verbose_name = "User"
         verbose_name_plural = "Users"

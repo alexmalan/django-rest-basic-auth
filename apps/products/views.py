@@ -1,5 +1,6 @@
-from math import prod
-
+"""
+Product views.
+"""
 from rest_framework import authentication, generics, permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -12,6 +13,12 @@ from .services import buy_product
 
 
 class ProductListView(generics.ListAPIView):
+    """
+    List all products.
+
+    * Requires session authentication.
+    """
+
     queryset = Product.objects.all()
     model = Product
     serializer_class = ProductSerializer
@@ -20,6 +27,12 @@ class ProductListView(generics.ListAPIView):
 
 
 class ProductCreateView(generics.CreateAPIView):
+    """
+    Create products.
+
+    * Requires session authentication.
+    """
+
     queryset = Product.objects.all()
     model = Product
     serializer_class = ProductSerializer
@@ -27,10 +40,19 @@ class ProductCreateView(generics.CreateAPIView):
     authentication_classes = [authentication.SessionAuthentication]
 
     def perform_create(self, serializer):
+        """
+        Perform create product.
+        """
         serializer.save(user_id=self.request.user)
 
 
 class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Update and Delete products.
+
+    * Requires session authentication.
+    """
+
     queryset = Product.objects.all()
     model = Product
     serializer_class = ProductSerializer
@@ -38,6 +60,13 @@ class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [authentication.SessionAuthentication]
 
     def get_object(self):
+        """
+        Retrieve product.
+
+        ```
+        :raise: ValidationError if product not found or is invalid
+        ```
+        """
         try:
             product = Product.objects.get(id=self.kwargs.get("product_id"))
         except:
@@ -45,14 +74,43 @@ class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         return product
 
     def update(self, request, *args, **kwargs):
+        """
+        Update product.
+
+        ```
+        :param Request request: client request with authorization in header
+        :return: Empty response with status 200
+        ```
+        """
         product = self.get_object()
         serializer = self.get_serializer(product, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
+    def destroy(self, request, *args, **kwargs):
+        """
+        Delete product.
+
+        ```
+        :return: Response with status 204
+        ```
+        """
+        product = self.get_object()
+        product.delete()
+        return Response(
+            {"message": "Product deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
 
 class ProductBuyView(generics.GenericAPIView):
+    """
+    Buy products.
+
+    * Requires session authentication.
+    """
+
     queryset = Product.objects.all()
     model = Product
     serializer_class = ProductSerializer
@@ -60,6 +118,15 @@ class ProductBuyView(generics.GenericAPIView):
     authentication_classes = [authentication.SessionAuthentication]
 
     def post(self, request, *args, **kwargs):
+        """
+        Buy product.
+
+        ```
+        :param Request request: client request with authorization in header
+        :return: Empty response with status 200
+        :raise: ValidationError if product not found or is invalid
+        ```
+        """
         if not request.data:
             raise ValidationError("Invalid payload")
 

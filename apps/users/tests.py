@@ -1,8 +1,9 @@
+"""
+User tests.
+"""
 # django
 from django.conf import settings
 from django.urls import reverse
-from rest_framework import status
-
 # rest framework
 from rest_framework.test import APITestCase
 
@@ -13,15 +14,19 @@ from apps.users.models import User
 class UserManagementTests(APITestCase):
     """
     Test CRUD operations for users
-    ( GET {{apiUrl}}/api/product/list/ ) - List
-    ( GET {{apiUrl}}/api/product/{product_id} ) - Read
-    ( PUT {{apiUrl}}/api/product/{product_id} ) - Update
-    ( DELETE {{apiUrl}}/api/product/{product_id} ) - Delete
-    ( POST {{apiUrl}}/api/product/create/ ) - Create
-
-    @required: settings.TOKEN - use a access / id TOKEN
-    @required: valid product_id on setUp function
+    ( POST {{apiUrl}}/api/user/register/ ) - Create
+    ( POST {{apiUrl}}/api/user/login/ ) - Read
+    ( GET {{apiUrl}}/api/user/status/ ) - Read
+    ( POST {{apiUrl}}/api/user/logout/ ) - Read
+    ( DELETE {{apiUrl}}/api/user/remove/ ) - Delete
+    ( POST {{apiUrl}}/api/user/deposit/ ) - Update
+    ( POST {{apiUrl}}/api/user/reset/ ) - Update
     """
+
+    mock_data = {
+        "username": "test@email.com",
+        "password": "test1234",
+    }
 
     def setUp(self):
         self.client.credentials(HTTP_AUTHORIZATION=getattr(settings, "TOKEN", ""))
@@ -29,79 +34,272 @@ class UserManagementTests(APITestCase):
     def tearDown(self):
         self.client.logout()
 
-    def test_user_register(self):
+    def test_user_register_success(self):
         """
-        Ensure we can get products list.
+        User register success.
         """
-        breakpoint()
+        url = reverse("user-register")
 
-    #     url = reverse('product_list')
+        response = self.client.post(url, self.mock_data, format="json")
+        json_response = response.json()
 
-    #     response = self.client.get(url, format='json')
-    #     self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_401_UNAUTHORIZED])
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue("username" in json_response)
+        self.assertTrue("password" in json_response)
+        self.assertTrue("deposit" in json_response)
+        self.assertTrue("role" in json_response)
 
-    #     if response.status_code != status.HTTP_401_UNAUTHORIZED:
-    #         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #         self.assertTrue(isinstance(response.data, list))
+        self.assertEqual(json_response["username"], self.mock_data["username"])
+        self.assertEqual(json_response["password"], self.mock_data["password"])
+        self.assertEqual(json_response["deposit"], 0)
+        self.assertEqual(json_response["role"], "BUYER")
 
-    #         if len(response.data) > 0:
-    #             first_item = response.data[0]
-    #             self.assertTrue('id' in first_item)
-    #             self.assertTrue('uuid' in first_item)
-    #             self.assertTrue('name' in first_item)
-    #             self.assertTrue('type' in first_item)
-    #             self.assertTrue('price' in first_item)
-    #     else:
-    #         print('UNAUTHORIZED')
+    def test_user_register_invalid_payload(self):
+        """
+        User register with invalid payload.
+        """
+        url = reverse("user-register")
 
-    # def test_product_details(self):
-    #     """
-    #     Ensure product details are returned correctly.
-    #     """
+        mock_data = {
+            "username": "user",
+            "password": "test",
+        }
+        response = self.client.post(url, mock_data, format="json")
+        json_response = response.json()
 
-    #     url = reverse('product_details', kwargs={'product_id': self.product_id})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            json_response["message"]["username"][0], "Enter a valid email address."
+        )
 
-    #     response = self.client.get(url, format='json')
-    #     self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_401_UNAUTHORIZED])
+    def test_user_login_success(self):
+        """
+        User login success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
 
-    #     if response.status_code != status.HTTP_401_UNAUTHORIZED:
-    #         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #         self.assertTrue(isinstance(response.data, dict))
+        self.client.post(url_register, self.mock_data, format="json")
+        response = self.client.post(url_login, self.mock_data, format="json")
 
-    #         product = response.data
-    #         self.assertTrue('id' in product)
-    #         self.assertTrue('uuid' in product)
-    #         self.assertTrue('name' in product)
-    #         self.assertTrue('type' in product)
-    #         self.assertTrue('price' in product)
-    #         self.assertTrue('status' in product)
-    #         self.assertTrue('created_by' in product)
-    #         self.assertTrue('updated_by' in product)
-    #         self.assertTrue('created_at' in product)
-    #         self.assertTrue('updated_at' in product)
-    #     else:
-    #         print('UNAUTHORIZED')
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["success"],
+            f"Welcome {self.mock_data['username']}: {user.role}",
+        )
 
-    # def test_create_product(self):
-    #     """
-    #     Ensure product can be created.
-    #     """
+    def test_user_login_invalid_payload(self):
+        """
+        User login with invalid payload.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
 
-    #     url = reverse('product_create')
-    #     mock_data = {
-    #         'name': 'test',
-    #         'type': 'SP',
-    #         'price': 500,
-    #     }
+        mock_data_altered = {
+            "username": "testing",
+            "password": "test1234",
+        }
+        self.client.post(url_register, self.mock_data, format="json")
+        response = self.client.post(url_login, mock_data_altered, format="json")
 
-    #     response = self.client.post(url, mock_data, format='json')
-    #     self.assertIn(response.status_code, [status.HTTP_201_CREATED, status.HTTP_401_UNAUTHORIZED])
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["message"][0], "Invalid Credentials")
 
-    #     if response.status_code != status.HTTP_401_UNAUTHORIZED:
-    #         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    #         product = response.data
-    #         self.assertEqual(mock_data['name'], str(product['name']))
-    #         self.assertEqual(mock_data['type'], str(product['type']))
-    #         self.assertEqual(float(mock_data['price']), float(product['price']))
-    #     else:
-    #         print('UNAUTHORIZED')
+    def test_user_status_success(self):
+        """
+        User status success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
+        url_status = reverse("user-status")
+
+        self.client.post(url_register, self.mock_data, format="json")
+        self.client.post(url_login, self.mock_data, format="json")
+        response = self.client.get(url_status, format="json")
+
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+        self.assertEqual(
+            response.json()["success"], f"Logged in as: {user.username} : {user.role}"
+        )
+
+    def test_user_status_invalid_request(self):
+        """
+        User status without being authenticated.
+        """
+        url_status = reverse("user-status")
+
+        response = self.client.get(url_status, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            json_response["error"]["message"],
+            "Authentication credentials were not provided.",
+        )
+
+    def test_user_logout_success(self):
+        """
+        User logout success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
+        url_logout = reverse("user-logout")
+
+        self.client.post(url_register, self.mock_data, format="json")
+        self.client.post(url_login, self.mock_data, format="json")
+
+        response = self.client.post(url_logout, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json_response["success"], "Logged Out Successfully")
+
+    def test_user_logout_invalid_request(self):
+        """
+        User logout without being authenticated.
+        """
+        url_logout = reverse("user-logout")
+
+        response = self.client.post(url_logout, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            json_response["error"]["message"],
+            "Authentication credentials were not provided.",
+        )
+
+    def test_user_deposit_success(self):
+        """
+        User deposit action success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
+        url_deposit = reverse("user-deposit")
+
+        self.client.post(url_register, self.mock_data, format="json")
+        self.client.post(url_login, self.mock_data, format="json")
+
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+        self.assertEqual(user.deposit, 0)
+
+        deposit_data = {"amount": 100}
+
+        response = self.client.post(url_deposit, deposit_data, format="json")
+        json_response = response.json()
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+
+        self.assertEqual(user.deposit, deposit_data["amount"])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json_response["success"],
+            f"Deposit successful. Your new balance is {user.deposit}",
+        )
+
+    def test_user_deposit_invalid_request(self):
+        """
+        User deposit action without being authenticated.
+        """
+        url_deposit = reverse("user-deposit")
+
+        deposit_data = {"amount": 100}
+        response = self.client.post(url_deposit, deposit_data, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            json_response["error"]["message"],
+            "Authentication credentials were not provided.",
+        )
+
+    def test_user_reset_deposit_success(self):
+        """
+        User reset deposit action success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
+        url_deposit = reverse("user-deposit")
+        url_reset = reverse("user-reset")
+
+        self.client.post(url_register, self.mock_data, format="json")
+        self.client.post(url_login, self.mock_data, format="json")
+
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+        self.assertEqual(user.deposit, 0)
+
+        deposit_data = {"amount": 100}
+
+        response = self.client.post(url_deposit, deposit_data, format="json")
+        json_response = response.json()
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+
+        self.assertEqual(user.deposit, deposit_data["amount"])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json_response["success"],
+            f"Deposit successful. Your new balance is {user.deposit}",
+        )
+
+        response = self.client.post(url_reset, format="json")
+        json_response = response.json()
+
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+
+        self.assertEqual(user.deposit, 0)
+        self.assertEqual(
+            json_response["success"],
+            f"Deposit reset successful. Your available balance is {user.deposit}",
+        )
+
+    def test_user_reset_deposit_invalid_request(self):
+        """
+        User reset deposit action without being authenticated.
+        """
+        url_reset = reverse("user-reset")
+        response = self.client.post(url_reset, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            json_response["error"]["message"],
+            "Authentication credentials were not provided.",
+        )
+
+    def test_user_delete_success(self):
+        """
+        User delete success.
+        """
+        url_register = reverse("user-register")
+        url_login = reverse("user-login")
+        url_remove = reverse("user-remove")
+
+        self.client.post(url_register, self.mock_data, format="json")
+        self.client.post(url_login, self.mock_data, format="json")
+
+        user = User.objects.filter(username=self.mock_data["username"]).get()
+        self.assertEqual(user.is_active, True)
+
+        response = self.client.delete(url_remove, format="json")
+        json_response = response.json()
+
+        user = User.objects.filter(username=self.mock_data["username"])
+
+        self.assertEqual(len(user), 0)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json_response["success"], "User Removed Successfully")
+
+    def test_user_delete_invalid_request(self):
+        """
+        User delete without being authenticated.
+        """
+        url_remove = reverse("user-remove")
+
+        response = self.client.delete(url_remove, format="json")
+        json_response = response.json()
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            json_response["error"]["message"],
+            "Authentication credentials were not provided.",
+        )

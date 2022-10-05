@@ -1,3 +1,6 @@
+"""
+Common project permissions.
+"""
 from rest_framework import permissions
 
 

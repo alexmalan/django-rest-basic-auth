@@ -1,3 +1,6 @@
+"""
+User url configuration.
+"""
 from django.urls import path
 
 from . import views
@@ -9,5 +12,5 @@ urlpatterns = [
     path("logout/", views.UserLogoutView.as_view(), name="user-logout"),
     path("remove/", views.UserRemoveView.as_view(), name="user-remove"),
     path("deposit/", views.UserDepositView.as_view(), name="user-deposit"),
-    path("reset/", views.UserResetView.as_view(), name="user-remove"),
+    path("reset/", views.UserResetView.as_view(), name="user-reset"),
 ]
