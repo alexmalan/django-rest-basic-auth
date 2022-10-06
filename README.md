@@ -1,4 +1,4 @@
-DJANGO REST API Basic Auth
+Django REST API Basic Auth
 ========================
 
 ### Description
@@ -62,7 +62,7 @@ DJANGO REST API Basic Auth
     python manage.py migrate
     ```
 
-### Run
+## Run
 
 -   Run APP using command:
     ```bash
@@ -72,6 +72,49 @@ DJANGO REST API Basic Auth
     localhost:<port_id>/admin/ - admin login page
     localhost:<port_id>/api/   - endpoints
     
+## Postman Configuration
+
+### Library Import
+* Find the product_management.postman_collection.json in the root directory
+- Open Postman
+   - File
+      - Import
+         - Upload files
+            - Open
+
+### Environment
+- In order to set the CSRF token in the environment you have to send a
+   * REGISTER request
+   * LOGIN request
+
+- In the LOGIN request there is a Cookies button
+   - Press on csrftoken
+      - Copy the value
+         - Example: csrftoken=hK82HTKSIElfvq8N4KT6bt3bS61iy9Iy;
+         - Value: hK82HTKSIElfvq8N4KT6bt3bS61iy9Iy
+
+* Environments
+   - Add
+      - Variable: csrftoken
+      - Type: default
+      - Initial value: Paste CSRFtoken value
+      - Current value: Paste CSRFtoken value
+   - Save
+
+### Requests
+*   USER/LOGIN Request:
+   - Tests
+      - Add the following code:
+       ```bash
+       var xsrfCookie = postman.getResponseCookie("csrftoken");
+       postman.setEnvironmentVariable('csrftoken', xsrfCookie.value);
+       ```
+      - Save
+* Headers
+   - Add variable key - X-CSRFToken - value - {{csrftoken}} to all the request headers
+
+- By adding the code above the CSRFToken will be added for every new session automatically
+
 ## Files
 * `core` - Django settings files
 * `common/` - Django common functionality
