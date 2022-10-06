@@ -75,7 +75,7 @@ Django REST API Basic Auth
 ## Postman Configuration
 
 ### Library Import
-* Find the product_management.postman_collection.json in the root directory
+* Find the Vending Machine.postman_collection.json in the root directory
 - Open Postman
    - File
       - Import
