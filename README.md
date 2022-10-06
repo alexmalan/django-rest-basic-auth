@@ -102,7 +102,7 @@ Django REST API Basic Auth
    - Save
 
 ### Requests
-*   USER/LOGIN Request:
+* USER/LOGIN Request:
    - Tests
       - Add the following code:
        ```bash
