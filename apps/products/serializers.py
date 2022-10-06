@@ -17,7 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """
 
         model = Product
-        fields = ("id", "name", "amount", "cost", "user_id")
+        fields = ("id", "name", "amount", "cost", "user")
         write_only_fields = (
             "name",
             "amount",
@@ -25,5 +25,5 @@ class ProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
-            "user_id",
+            "user",
         )

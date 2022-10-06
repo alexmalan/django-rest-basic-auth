@@ -4,6 +4,7 @@ User tests.
 # django
 from django.conf import settings
 from django.urls import reverse
+
 # rest framework
 from rest_framework.test import APITestCase
 

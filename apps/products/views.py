@@ -43,7 +43,7 @@ class ProductCreateView(generics.CreateAPIView):
         """
         Perform create product.
         """
-        serializer.save(user_id=self.request.user)
+        serializer.save(user=self.request.user)
 
 
 class ProductUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):

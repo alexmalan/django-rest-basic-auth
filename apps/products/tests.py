@@ -4,8 +4,11 @@ Product tests.
 # django
 from django.conf import settings
 from django.urls import reverse
+
 # rest framework
 from rest_framework.test import APITestCase
+
+from apps.products.models import Product
 
 # local api
 from apps.users.models import User
@@ -22,18 +25,21 @@ class ProductsManagementTests(APITestCase):
     """
 
     user1_seller = {
+        "id": 1,
         "username": "test1@email.com",
         "password": "test1234",
         "role": "SELLER",
     }
 
     user2_seller = {
+        "id": 2,
         "username": "test2@email.com",
         "password": "test1234",
         "role": "SELLER",
     }
 
     user3_buyer = {
+        "id": 3,
         "username": "test3@email.com",
         "password": "test1234",
         "role": "BUYER",
@@ -41,12 +47,14 @@ class ProductsManagementTests(APITestCase):
     }
 
     product_1 = {
+        "id": 100,
         "name": "Product 1",
         "amount": 10,
         "cost": 10,
     }
 
     product_2 = {
+        "id": 101,
         "name": "Product 2",
         "amount": 20,
         "cost": 20,
@@ -170,7 +178,10 @@ class ProductsManagementTests(APITestCase):
             "amount": 300,
             "cost": 300,
         }
-        product_update = reverse("product-update-delete", kwargs={"product_id": 1})
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_update = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
         response = self.client.put(product_update, product_payload, format="json")
         json_response = response.json()
         user = User.objects.get(username=self.user1_seller["username"])
@@ -179,7 +190,7 @@ class ProductsManagementTests(APITestCase):
         self.assertEqual(json_response["name"], product_payload["name"])
         self.assertEqual(json_response["cost"], product_payload["cost"])
         self.assertEqual(json_response["amount"], product_payload["amount"])
-        self.assertEqual(json_response["user_id"], user.id)
+        self.assertEqual(json_response["user"], user.id)
 
         self.assertTrue(user.role, self.user1_seller["role"])
 
@@ -198,7 +209,12 @@ class ProductsManagementTests(APITestCase):
             "amount": 300,
             "cost": 300,
         }
-        product_update = reverse("product-update-delete", kwargs={"product_id": 6})
+        product_id = (
+            Product.objects.filter(name=self.product_1["name"]).first().id + 123
+        )
+        product_update = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
         response = self.client.put(product_update, product_payload, format="json")
         json_response = response.json()
 
@@ -248,8 +264,11 @@ class ProductsManagementTests(APITestCase):
             "cost": 300,
         }
 
+        product_id = Product.objects.get(name=self.product_1["name"]).id
         self.client.post(user_login, self.user2_seller, format="json")
-        product_update = reverse("product-update-delete", kwargs={"product_id": 1})
+        product_update = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
         response = self.client.put(product_update, product_payload, format="json")
         json_response = response.json()
 
@@ -265,12 +284,15 @@ class ProductsManagementTests(APITestCase):
         """
         user_login = reverse("user-login")
         product_create = reverse("product-create")
-        product_delete = reverse("product-update-delete", kwargs={"product_id": 1})
 
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
-        response = self.client.delete(product_delete, format="json")
 
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_delete = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
+        response = self.client.delete(product_delete, format="json")
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data["message"], "Product deleted successfully")
 
@@ -280,10 +302,14 @@ class ProductsManagementTests(APITestCase):
         """
         user_login = reverse("user-login")
         product_create = reverse("product-create")
-        product_delete = reverse("product-update-delete", kwargs={"product_id": 5})
 
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_delete = reverse(
+            "product-update-delete", kwargs={"product_id": product_id + 112}
+        )
         response = self.client.delete(product_delete, format="json")
 
         self.assertEqual(response.status_code, 400)
@@ -296,12 +322,16 @@ class ProductsManagementTests(APITestCase):
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_delete = reverse("product-update-delete", kwargs={"product_id": 1})
 
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, format="json")
         self.client.post(user_login, self.user3_buyer, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_delete = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
         response = self.client.delete(product_delete, format="json")
 
         self.assertEqual(response.status_code, 403)
@@ -317,12 +347,16 @@ class ProductsManagementTests(APITestCase):
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_delete = reverse("product-update-delete", kwargs={"product_id": 1})
 
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, format="json")
         self.client.post(user_login, self.user2_seller, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_delete = reverse(
+            "product-update-delete", kwargs={"product_id": product_id}
+        )
         response = self.client.delete(product_delete, format="json")
 
         self.assertEqual(response.status_code, 403)
@@ -335,18 +369,18 @@ class ProductsManagementTests(APITestCase):
         """
         Product buy success.
         """
-        product_id = 1
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
-
         buy_payload = {"quantity": 1}
 
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, self.product_1, format="json")
         self.client.post(user_login, self.user3_buyer, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
         response = self.client.post(product_buy, buy_payload, format="json")
         json_response = response.json()["response"]
 
@@ -369,11 +403,9 @@ class ProductsManagementTests(APITestCase):
         """
         Product buy invalid payload.
         """
-        product_id = 1
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
 
         buy_payload = {"quantity": "asasas"}
 
@@ -381,6 +413,9 @@ class ProductsManagementTests(APITestCase):
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, self.product_1, format="json")
         self.client.post(user_login, self.user3_buyer, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
         response = self.client.post(product_buy, buy_payload, format="json")
         json_response = response.json()
 
@@ -395,7 +430,6 @@ class ProductsManagementTests(APITestCase):
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
 
         buy_payload = {"quantity": 1}
 
@@ -403,6 +437,9 @@ class ProductsManagementTests(APITestCase):
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, self.product_1, format="json")
         self.client.post(user_login, self.user2_seller, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
         response = self.client.post(product_buy, buy_payload, format="json")
         json_response = response.json()
 
@@ -416,11 +453,9 @@ class ProductsManagementTests(APITestCase):
         """
         Product buy quantity not available.
         """
-        product_id = 1
         user_login = reverse("user-login")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
 
         buy_payload = {"quantity": 102021}
 
@@ -428,6 +463,9 @@ class ProductsManagementTests(APITestCase):
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(user_logout, self.product_1, format="json")
         self.client.post(user_login, self.user3_buyer, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
         response = self.client.post(product_buy, buy_payload, format="json")
         json_response = response.json()
 
@@ -446,7 +484,6 @@ class ProductsManagementTests(APITestCase):
         user_reset = reverse("user-reset")
         user_logout = reverse("user-logout")
         product_create = reverse("product-create")
-        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
 
         buy_payload = {"quantity": 1}
 
@@ -455,6 +492,9 @@ class ProductsManagementTests(APITestCase):
         self.client.post(user_logout, self.product_1, format="json")
         self.client.post(user_login, self.user3_buyer, format="json")
         self.client.post(user_reset, format="json")
+
+        product_id = Product.objects.get(name=self.product_1["name"]).id
+        product_buy = reverse("product-buy", kwargs={"product_id": product_id})
         response = self.client.post(product_buy, buy_payload, format="json")
         json_response = response.json()
 

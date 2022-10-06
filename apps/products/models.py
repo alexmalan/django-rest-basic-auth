@@ -15,7 +15,7 @@ class Product(BaseClass):
     name = models.CharField(max_length=255, null=False, blank=False)
     amount = models.IntegerField(null=False, blank=False)
     cost = models.IntegerField(null=False, blank=False, default=0)
-    user_id = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
     )
