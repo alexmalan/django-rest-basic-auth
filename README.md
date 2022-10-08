@@ -69,8 +69,8 @@ Django REST API Basic Auth
     python manage.py runserver <optional_port_id>
     ```
 - Localhost resources:
-    localhost:<port_id>/admin/ - admin login page
-    localhost:<port_id>/api/   - endpoints
+    * localhost:<port_id>/admin/ - admin login page
+    * localhost:<port_id>/api/   - endpoints
     
 ## Postman Configuration
 
@@ -102,7 +102,7 @@ Django REST API Basic Auth
    - Save
 
 ### Requests
-*   USER/LOGIN Request:
+* USER/LOGIN Request:
    - Tests
       - Add the following code:
        ```bash
