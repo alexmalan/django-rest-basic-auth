@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"user2@gmail.com\",\n    \"password\": \"1234\",\n    \"role\": \"SELLER\"\n}\n",
+							"raw": "{\n    \"username\": \"user1@gmail.com\",\n    \"password\": \"1234\"\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -71,7 +71,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"user2@gmail.com\",\n    \"password\": \"1234\"\n}",
+							"raw": "{\n    \"username\": \"user1@gmail.com\",\n    \"password\": \"1234\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -204,7 +204,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"amount\": 50\n}",
+							"raw": "{\n    \"amount\": 100\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -243,7 +243,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/action/reset",
+							"raw": "http://127.0.0.1:8000/api/user/reset/",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -254,8 +254,9 @@
 							"port": "8000",
 							"path": [
 								"api",
-								"action",
-								"reset"
+								"user",
+								"reset",
+								""
 							]
 						}
 					},
@@ -310,7 +311,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"amount\": 22,\n    \"cost\": 22,\n    \"name\": \"Product 2\"\n}",
+							"raw": "{\n    \"amount\": 11,\n    \"cost\": 11,\n    \"name\": \"Product 1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -358,7 +359,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/product/2/",
+							"raw": "http://127.0.0.1:8000/api/product/1/",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -370,7 +371,7 @@
 							"path": [
 								"api",
 								"product",
-								"2",
+								"1",
 								""
 							]
 						}
@@ -398,7 +399,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/product/2/",
+							"raw": "http://127.0.0.1:8000/api/product/1/",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -410,7 +411,7 @@
 							"path": [
 								"api",
 								"product",
-								"2",
+								"1",
 								""
 							]
 						}
@@ -430,7 +431,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"product_id\": 1,\n    \"quantity\": 2\n}",
+							"raw": "{\n    \"quantity\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -438,7 +439,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/action/buy",
+							"raw": "http://127.0.0.1:8000/api/product/1/buy/",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -449,8 +450,10 @@
 							"port": "8000",
 							"path": [
 								"api",
-								"action",
-								"buy"
+								"product",
+								"1",
+								"buy",
+								""
 							]
 						}
 					},

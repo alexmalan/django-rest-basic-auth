@@ -1,11 +1,8 @@
 """
 User models.
 """
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin,
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
 
 
@@ -24,9 +21,13 @@ class UserManager(BaseUserManager):
             raise TypeError("Users should have a username")
 
         email = self.normalize_email(username)
+        role = "BUYER" if role is None else role
+        deposit = 0 if deposit is None else deposit
+
         user = self.model(username=email, role=role, deposit=deposit, **extra_fields)
         user.set_password(password)
-        user.save()
+        user.save(using=self._db)
+
         return user
 
     def create_superuser(

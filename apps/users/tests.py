@@ -4,7 +4,6 @@ User tests.
 # django
 from django.conf import settings
 from django.urls import reverse
-
 # rest framework
 from rest_framework.test import APITestCase
 
@@ -46,12 +45,10 @@ class UserManagementTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertTrue("username" in json_response)
-        self.assertTrue("password" in json_response)
         self.assertTrue("deposit" in json_response)
         self.assertTrue("role" in json_response)
 
         self.assertEqual(json_response["username"], self.mock_data["username"])
-        self.assertEqual(json_response["password"], self.mock_data["password"])
         self.assertEqual(json_response["deposit"], 0)
         self.assertEqual(json_response["role"], "BUYER")
 
@@ -234,7 +231,6 @@ class UserManagementTests(APITestCase):
         response = self.client.post(url_deposit, deposit_data, format="json")
         json_response = response.json()
         user = User.objects.filter(username=self.mock_data["username"]).get()
-
         self.assertEqual(user.deposit, deposit_data["amount"])
         self.assertEqual(response.status_code, 200)
         self.assertEqual(

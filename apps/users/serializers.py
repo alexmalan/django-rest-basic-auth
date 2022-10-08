@@ -18,3 +18,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         model = User
         fields = ("username", "password", "role", "deposit")
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        """
+        Create a new user with encrypted password and return it.
+        """
+        user = User.objects.create_user(**validated_data)
+        user.save()
+        return user

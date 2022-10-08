@@ -2,6 +2,7 @@
 User views.
 """
 from django.contrib.auth import login, logout
+from django.contrib.auth.hashers import check_password
 from rest_framework import authentication, generics, permissions, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -46,10 +47,10 @@ class UserLoginView(generics.RetrieveAPIView):
         ```
         """
         user = User.objects.filter(
-            username=request.data.get("username", None),
-            password=request.data.get("password", None),
+            username=request.data.get("username"),
         ).first()
-        if user:
+
+        if user and check_password(request.data.get("password"), user.password):
             login(request, user)
             return Response(
                 {"success": f"Welcome {request.user}: {request.user.role}"},

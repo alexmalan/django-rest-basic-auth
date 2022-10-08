@@ -4,12 +4,10 @@ Product tests.
 # django
 from django.conf import settings
 from django.urls import reverse
-
 # rest framework
 from rest_framework.test import APITestCase
 
 from apps.products.models import Product
-
 # local api
 from apps.users.models import User
 
@@ -76,7 +74,6 @@ class ProductsManagementTests(APITestCase):
         user_login = reverse("user-login")
         product_create = reverse("product-create")
         product_list = reverse("product-list")
-
         self.client.post(user_login, self.user1_seller, format="json")
         self.client.post(product_create, self.product_1, format="json")
         self.client.post(product_create, self.product_2, format="json")
